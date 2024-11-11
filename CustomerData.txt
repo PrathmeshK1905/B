@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract CustomerData {
+
+    // Structure to represent a Customer
+    struct Customer {
+        uint id;
+        string name;
+        uint age;
+        string email;
+    }
+
+    // Array to store all customers
+    Customer[] public customers;
+
+    // Mapping to check if a customer exists by id
+    mapping(uint => bool) public customerExists;
+
+    // Mapping to store total Ether received from each address
+    mapping(address => uint) public balances;
+
+    // Event to emit when a new customer is added
+    event CustomerAdded(uint id, string name);
+
+    // Event to emit when Ether is received
+    event EtherReceived(address sender, uint amount);
+
+    // Function to add a new customer
+    function addCustomer(uint _id, string memory _name, uint _age, string memory _email) public {
+        require(!customerExists[_id], "Customer ID already exists.");
+
+        customers.push(Customer(_id, _name, _age, _email));
+        customerExists[_id] = true;
+
+        emit CustomerAdded(_id, _name);
+    }
+
+    // Function to get the total number of customers
+    function getTotalCustomers() public view returns (uint) {
+        return customers.length;
+    }
+
+    // Function to get customer by index
+    function getCustomerByIndex(uint _index) public view returns (uint, string memory, uint, string memory) {
+        require(_index < customers.length, "Invalid customer index.");
+
+        Customer memory customer = customers[_index];
+        return (customer.id, customer.name, customer.age, customer.email);
+    }
+
+    // Receive function to accept Ether directly and update balances
+    receive() external payable {
+        require(msg.value > 0, "No Ether received.");
+
+        // Update the sender's balance with the amount of Ether sent
+        balances[msg.sender] += msg.value;
+
+        // Emit event with the details of the Ether received
+        emit EtherReceived(msg.sender, msg.value);
+    }
+
+    // Fallback function to handle unexpected calls
+    fallback() external payable {
+        // Fallback function here to accept any unexpected Ether transfers with data
+    }
+}

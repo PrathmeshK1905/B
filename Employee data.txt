@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract EmployeeData {
+
+    // Structure to represent an Employee
+    struct Employee {
+        uint id;
+        string name;
+        uint age;
+        string department;
+    }
+
+    // Array to store all employees
+    Employee[] public employees;
+
+    // Mapping to check if an employee exists by id
+    mapping(uint => bool) public employeeExists;
+
+    // Event to emit when a new employee is added
+    event EmployeeAdded(uint id, string name);
+
+    // Function to add a new employee
+    function addEmployee(uint _id, string memory _name, uint _age, string memory _department) public {
+        require(!employeeExists[_id], "Employee ID already exists.");
+
+        employees.push(Employee(_id, _name, _age, _department));
+        employeeExists[_id] = true;
+
+        emit EmployeeAdded(_id, _name);
+    }
+
+    // Function to get the total number of employees
+    function getTotalEmployees() public view returns (uint) {
+        return employees.length;
+    }
+
+    // Receive function to accept Ether directly
+    receive() external payable {
+        // Optional: you can add logic to handle Ether transfers, like logging the received amount
+    }
+
+    // Fallback function to handle unexpected calls
+    fallback() external payable {
+        // This function does not take any action but can log the sender and value if desired
+    }
+
+    // Function to get an employee by index
+    function getEmployeeByIndex(uint _index) public view returns (uint, string memory, uint, string memory) {
+        require(_index < employees.length, "Invalid employee index.");
+
+        Employee memory emp = employees[_index];
+        return (emp.id, emp.name, emp.age, emp.department);
+    }
+}

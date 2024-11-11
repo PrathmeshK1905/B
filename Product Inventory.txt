@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ProductInventory {
+    
+    struct Product {
+        uint id;
+        string name;
+        uint quantity;
+    }
+    
+    mapping(uint => Product) public products;
+    uint public nextProductId = 1;
+    
+    event ProductReceived(uint productId, string name, uint quantity);
+    event ProductSold(uint productId, uint quantity, uint remainingStock);
+    
+    // Function to add a product to the inventory or receive additional stock
+    function receiveProduct(string memory _name, uint _quantity) public {
+        require(_quantity > 0, "Quantity should be greater than zero.");
+        
+        products[nextProductId] = Product(nextProductId, _name, _quantity);
+        emit ProductReceived(nextProductId, _name, _quantity);
+        nextProductId++;
+    }
+    
+    // Function to sell a product
+    function sellProduct(uint _productId, uint _quantity) public {
+        Product storage product = products[_productId];
+        
+        require(product.quantity >= _quantity, "Not enough stock to fulfill the sale.");
+        require(_quantity > 0, "Quantity should be greater than zero.");
+        
+        product.quantity -= _quantity;
+        
+        emit ProductSold(_productId, _quantity, product.quantity);
+    }
+    
+    // Function to view the stock of a specific product
+    function displayStock(uint _productId) public view returns (string memory name, uint quantity) {
+        Product storage product = products[_productId];
+        return (product.name, product.quantity);
+    }
+    
+    // Function to view total products added
+    function totalProducts() public view returns (uint) {
+        return nextProductId - 1;
+    }
+}
